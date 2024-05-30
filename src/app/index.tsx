@@ -5,7 +5,10 @@ import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { supabase } from "../lib/supabase";
 
 export default function HomeScreen() {
-	const [polls, setPolls] = useState([]);
+	const [polls, setPolls] = useState<
+		| { created_at: string; id: number; options: string[]; question: string }[]
+		| []
+	>([]);
 
 	useEffect(() => {
 		const fetchPolls = async () => {
@@ -13,7 +16,8 @@ export default function HomeScreen() {
 			if (error) {
 				Alert.alert("Error fetching data...", error.message);
 			}
-			console.log(data);
+
+			if (!data) return;
 			setPolls(data);
 		};
 
@@ -28,6 +32,11 @@ export default function HomeScreen() {
 					headerRight: () => (
 						<Link href={"/polls/new"}>
 							<AntDesign name="plus" size={20} color="gray" />
+						</Link>
+					),
+					headerLeft: () => (
+						<Link href={"/profile"}>
+							<AntDesign name="user" size={20} color="gray" />
 						</Link>
 					),
 				}}
