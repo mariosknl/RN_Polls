@@ -1,4 +1,4 @@
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { Button, Text, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 

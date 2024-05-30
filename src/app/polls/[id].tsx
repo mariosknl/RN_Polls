@@ -1,4 +1,4 @@
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { supabase } from "@/src/lib/supabase";
 import { Poll, Vote } from "@/src/types/db";
 import { Feather } from "@expo/vector-icons";
@@ -39,6 +39,8 @@ export default function PollDetails() {
 
 		// fetch user vote
 		const fetchUserVote = async () => {
+			if (!user) return;
+
 			let { data, error } = await supabase
 				.from("votes")
 				.select("*")

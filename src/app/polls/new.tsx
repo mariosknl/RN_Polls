@@ -1,4 +1,4 @@
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { supabase } from "@/src/lib/supabase";
 import { Feather } from "@expo/vector-icons";
 import { Redirect, Stack, useRouter } from "expo-router";

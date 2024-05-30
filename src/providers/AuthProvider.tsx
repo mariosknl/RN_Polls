@@ -11,11 +11,13 @@ import {
 type AuthContextType = {
 	session: Session | null;
 	user: User | undefined;
+	isAuthenticated: boolean | undefined;
 };
 
 const AuthContext = createContext<AuthContextType>({
 	session: null,
 	user: undefined,
+	isAuthenticated: false,
 });
 
 export default function AuthProvider({ children }: PropsWithChildren) {
@@ -24,6 +26,10 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session);
+
+			if (!session) {
+				supabase.auth.signInAnonymously();
+			}
 		});
 
 		supabase.auth.onAuthStateChange((_event, session) => {
@@ -32,7 +38,13 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 	}, []);
 
 	return (
-		<AuthContext.Provider value={{ session, user: session?.user }}>
+		<AuthContext.Provider
+			value={{
+				session,
+				user: session?.user,
+				isAuthenticated: session?.user && !session?.user.is_anonymous,
+			}}
+		>
 			{children}
 		</AuthContext.Provider>
 	);
