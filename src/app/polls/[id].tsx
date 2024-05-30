@@ -1,5 +1,6 @@
+import { useAuth } from "@/providers/AuthProvider";
 import { supabase } from "@/src/lib/supabase";
-import { Poll } from "@/src/types/db";
+import { Poll, Vote } from "@/src/types/db";
 import { Feather } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -16,8 +17,10 @@ import {
 export default function PollDetails() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const [poll, setPoll] = useState<Poll>();
+	const [userVote, setUserVote] = useState<Vote | null>(null);
 
 	const [selected, setSelected] = useState("");
+	const { user } = useAuth();
 
 	useEffect(() => {
 		const fetchPolls = async () => {
@@ -34,11 +37,49 @@ export default function PollDetails() {
 			setPoll(data);
 		};
 
+		// fetch user vote
+		const fetchUserVote = async () => {
+			let { data, error } = await supabase
+				.from("votes")
+				.select("*")
+				.eq("poll_id", Number.parseInt(id!))
+				.eq("user_id", user?.id)
+				.limit(1)
+				.single();
+
+			setUserVote(data);
+			if (data) {
+				setSelected(data.option);
+			}
+		};
+
 		fetchPolls();
+		fetchUserVote();
 	}, []);
 
-	const vote = () => {
-		console.log("Vote:", selected);
+	const vote = async () => {
+		const newVote = {
+			option: selected,
+			poll_id: poll?.id,
+			user_id: user?.id,
+		};
+
+		if (userVote) {
+			newVote.id = userVote.id;
+		}
+
+		const { data, error } = await supabase
+			.from("votes")
+			.upsert([newVote])
+			.select()
+			.single();
+
+		if (error) {
+			Alert.alert("Failed voting", error.message);
+		} else {
+			setUserVote(data);
+			Alert.alert("Thank you for you vote");
+		}
 	};
 
 	if (!poll) {
